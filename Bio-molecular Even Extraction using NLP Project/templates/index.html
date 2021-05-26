@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bio-molecular event extraction using NLP</title>
+  <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style type="text/css">
+  .main-section{
+  margin:0 auto;
+  padding: 20px;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0px 0px 20px #c1c1c1;
+}
+
+body {
+  margin: 0;
+  font-family: "Lato", sans-serif;
+}
+
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+ 
+.sidebar a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+div.content {
+  margin-left: 200px;
+  padding: 1px 16px;
+  height: 1000px;
+}
+
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+
+</style>
+  
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css">
+<!-- Bootstrap core CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/css/bootstrap.min.css" rel="stylesheet">
+<!-- Material Design Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.3/css/mdb.min.css" rel="stylesheet">
+
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+ <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+  <a class="navbar-brand" href="/">B-mEEN</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+
+       <li class="nav-item">
+        <a class="nav-link" href="#">About</a>
+      </li>
+
+  </div>
+</nav>
+<br/>
+
+
+<div class="jumbotron" style="background:#0686e4;color:#fff">
+    <div class="container">
+      <h2 class="display-3">Bio-molecular event extraction using NLP</h2>
+      <p>B-mEEN web application is used to extract bio-molecular event extraction using NLP technique.</p>
+      <p><a class="btn btn-success waves-effect btn-lg" href="/" role="button">Refresh &raquo;</a></p>
+    </div>
+  </div>
+<br/>
+
+<div class="container" >
+  <form method="POST" action="{{ url_for('extract')}}" enctype=multipart/form-data>
+    <div class="main-section" >
+      <h5>Drag and Drop</h5>
+      <input type="file" name="rawtext" class="file-upload" required="true" >
+    </div>
+      <br/>
+        <button type="submit" class="btn btn-primary" ><i class="fa fa-database"></i> Submit</button>
+  </form>
+</div>
+<br>
+
+
+
+<br>
+<br>
+
+<!-- Number of token labels -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+    <h2>Number of Problem, Test & Treatment Entities</h2>
+    <br>
+  <div class="row">
+  <div class="col-4">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Problem</th>
+      <td>{{ miprl }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="col-4">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Test</th>
+      <td>{{ mitel }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="col-4">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Treatment</th>
+      <td>{{ mitrl }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Left Side Bar for Token Entity -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+  <h2>Problem, Test & Treatment</h2>
+  <br>
+  <div class="row">
+    <div class="col-3">
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link active" id="tab01" data-toggle="pill" href="#t01" role="tab" aria-controls="t01" aria-selected="true">Problem</a>
+        <a class="nav-link" id="tab02" data-toggle="pill" href="#t02" role="tab" aria-controls="t02" aria-selected="false">Test</a>
+        <a class="nav-link" id="tab03" data-toggle="pill" href="#t03" role="tab" aria-controls="t03" aria-selected="false">Treatment</a>
+      </div>
+    </div>
+    <div class="col-9">
+      <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="t01" role="tabpanel" aria-labelledby="tab01">
+          <h3>Problem</h3>
+          <p> {{ mipr }} </p>
+        </div>
+        <div class="tab-pane fade" id="t02" role="tabpanel" aria-labelledby="tab02">
+          <h3>Test</h3>
+          <p> {{ mite }} </p>
+        </div>
+        <div class="tab-pane fade" id="t03" role="tabpanel" aria-labelledby="tab03">
+          <h3>Treatment</h3>
+          <p> {{ mitr }} </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
+
+
+
+<!-- Number of token labels -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+    <h2>Number of Diseases & Chemicals</h2>
+    <br>
+  <div class="row">
+  <div class="col-6">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Disease</th>
+      <td>{{ cbcdl }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="col-6">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Chemical</th>
+      <td>{{ cbccl }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+<!-- Left Side Bar for Token Entity -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+  <h2>Diseases & Chemicals</h2>
+  <br>
+  <div class="row">
+    <div class="col-3">
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link active" id="tab04" data-toggle="pill" href="#t04" role="tab" aria-controls="t04" aria-selected="true">Disease</a>
+        <a class="nav-link" id="tab05" data-toggle="pill" href="#t05" role="tab" aria-controls="t05" aria-selected="false">Chemical</a>
+      </div>
+    </div>
+    <div class="col-9">
+      <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="t04" role="tabpanel" aria-labelledby="tab04">
+          <h3>Disease</h3>
+          <p> {{ cbcd }} </p>
+        </div>
+        <div class="tab-pane fade" id="t05" role="tabpanel" aria-labelledby="tab05">
+          <h3>Chemical</h3>
+          <p> {{ cbcc }} </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
+
+<!-- Number of token labels -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+    <h2>Number of Diseases & Chemicals</h2>
+    <br>
+  <div class="row">
+  <div class="col-6">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Cancer</th>
+      <td>{{ cbiocl }}</td>
+    </tr>
+    <tr>
+      <th>Amino Acid</th>
+      <td>{{ cbioaal }}</td>
+    </tr>
+    <tr>
+      <th>Tissue</th>
+      <td>{{ cbiotl }}</td>
+    </tr>
+    <tr>
+      <th>Organism</th>
+      <td>{{ cbiool }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="col-6">
+  <table class="table table-bordered bg-primary" style="color: #fff">
+  
+  <tbody>
+    <tr>
+      <th>Gene or Gene Product</th>
+      <td>{{ cbiogl }}</td>
+    </tr>
+    <tr>
+      <th>Organ</th>
+      <td>{{ cbioogl }}</td>
+    </tr>
+    <tr>
+      <th>Simple Chemical</th>
+      <td>{{ cbioscl }}</td>
+    </tr>
+    <tr>
+      <th>Multi Tissue Structure</th>
+      <td>{{ cbiomtsl }}</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+
+
+<br>
+<br>
+
+<!-- Left Side Bar for Token Entity -->
+<div class="container shadow-sm p-3 mb-5 bg-white rounded">
+  <h2>Entity Type Summary</h2>
+  <br>
+  <div class="row">
+    <div class="col-3">
+      <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+        <a class="nav-link active" id="tab06" data-toggle="pill" href="#t06" role="tab" aria-controls="t06" aria-selected="true">Cancer</a>
+        <a class="nav-link" id="tab07" data-toggle="pill" href="#t07" role="tab" aria-controls="t07" aria-selected="false">Amino Acid</a>
+        <a class="nav-link" id="tab08" data-toggle="pill" href="#t08" role="tab" aria-controls="t08" aria-selected="false">Tissue</a>
+        <a class="nav-link" id="tab09" data-toggle="pill" href="#t09" role="tab" aria-controls="t09" aria-selected="false">Organism</a>
+        <a class="nav-link" id="tab10" data-toggle="pill" href="#t10" role="tab" aria-controls="t10" aria-selected="false">Gene or Gene Product</a>
+        <a class="nav-link" id="tab11" data-toggle="pill" href="#t11" role="tab" aria-controls="t11" aria-selected="false">Organ</a>
+        <a class="nav-link" id="tab12" data-toggle="pill" href="#t12" role="tab" aria-controls="t12" aria-selected="false">Simple Chemical</a>
+        <a class="nav-link" id="tab13" data-toggle="pill" href="#t13" role="tab" aria-controls="t13" aria-selected="false">Multi Tissue Structure</a>
+      </div>
+    </div>
+    <div class="col-9">
+      <div class="tab-content" id="v-pills-tabContent">
+        <div class="tab-pane fade show active" id="t06" role="tabpanel" aria-labelledby="tab06">
+          <h3>Cancer</h3>
+          <p> {{ cbioc }} </p>
+        </div>
+        <div class="tab-pane fade" id="t07" role="tabpanel" aria-labelledby="tab07">
+          <h3>Amino Acid</h3>
+          <p> {{ cbioaa }} </p>
+        </div>
+        <div class="tab-pane fade" id="t08" role="tabpanel" aria-labelledby="tab08">
+          <h3>Tissue</h3>
+          <p> {{ cbiot }} </p>
+
+        </div>
+        <div class="tab-pane fade" id="t09" role="tabpanel" aria-labelledby="tab09">
+          <h3>Organism</h3>
+          <p> {{ cbioo }} </p>
+
+        </div>
+        <div class="tab-pane fade" id="t10" role="tabpanel" aria-labelledby="tab10">
+          <h3>Gene or Gene Product</h3>
+          <p> {{ cbiog }} </p>
+
+        </div>
+        <div class="tab-pane fade" id="t11" role="tabpanel" aria-labelledby="tab11">
+          <h3>Organ</h3>
+          <p> {{ cbioog }} </p>
+
+        </div>
+        <div class="tab-pane fade" id="t12" role="tabpanel" aria-labelledby="tab12">
+          <h3>Simple Chemical</h3>
+          <p> {{ cbiosc }} </p>
+
+        </div>
+        <div class="tab-pane fade" id="t13" role="tabpanel" aria-labelledby="tab13">
+          <h3>Multi Tissue Structure</h3>
+          <p> {{ cbiomts }} </p>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<br>
+
+
+
+<!-- JQuery -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.7.3/js/mdb.min.js"></script>
+
+</body>
+</html>
+
+</body>
+</html>
